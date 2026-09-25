@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Guía Admin - Island vs Mega</title>
+<style>
+:root{
+  --bg1:#090611;--bg2:#0d081a;
+  --v1:#9d4edd;--v2:#7b2cbf;--v3:#c77dff;
+  --r1:#ff0054;--r2:#d90429;--r3:#ef233c;
+  --white:#ffffff;--gray:#e2e8f0;
+  --glass:rgba(18,12,34,0.75);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;scroll-padding-top:20px;}
+body{
+  background:linear-gradient(160deg,var(--bg1),var(--bg2));
+  color:var(--gray);
+  font-family:'Segoe UI',system-ui,sans-serif;
+  min-height:100vh;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  overflow-x:hidden;
+}
+#bg-canvas{position:fixed;inset:0;z-index:0;width:100%;height:100%;}
+.wrap{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:0 20px;}
+
+header.hero{
+  text-align:center;padding:90px 20px 60px;position:relative;z-index:1;
+}
+header.hero h1{
+  font-size:clamp(2rem,5vw,3.2rem);
+  background:linear-gradient(90deg,var(--v3),var(--r3));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  letter-spacing:1px;
+}
+header.hero p{color:var(--gray);margin-top:14px;font-size:1.1rem;max-width:600px;margin-inline:auto;}
+.badges{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:24px;}
+.badge{
+  border:1px solid var(--v2);background:rgba(157,78,221,0.12);
+  padding:8px 16px;border-radius:30px;font-size:0.85rem;color:var(--v3);
+}
+.badge.red{border-color:var(--r2);background:rgba(217,4,41,0.12);color:var(--r3);}
+
+section{padding:60px 0;position:relative;z-index:1;scroll-margin-top:20px;}
+section h2{font-size:1.7rem;color:var(--white);margin-bottom:8px;}
+section > .wrap > p.lead{color:var(--v3);margin-bottom:28px;font-size:0.95rem;}
+
+.card{
+  background:var(--glass);backdrop-filter:blur(12px);
+  border:1px solid transparent;
+  border-image:linear-gradient(135deg,var(--v2),var(--r2)) 1;
+  border-radius:14px;padding:22px;margin-bottom:16px;
+  box-shadow:0 0 20px rgba(157,78,221,0.08);
+}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-bottom:24px;}
+.card h3{color:var(--white);font-size:1rem;margin-bottom:8px;}
+.card .big{font-size:1.4rem;color:var(--v3);font-weight:600;}
+
+table{width:100%;border-collapse:collapse;margin-top:10px;}
+th,td{padding:12px 10px;text-align:left;border-bottom:1px solid rgba(157,78,221,0.25);font-size:0.92rem;}
+th{color:var(--white);}
+td{color:var(--gray);}
+.table-wrap{overflow-x:auto;background:var(--glass);border-radius:14px;padding:10px 16px;backdrop-filter:blur(12px);}
+
+.banner{
+  background:rgba(157,78,221,0.1);border-left:3px solid var(--v3);
+  padding:14px 18px;border-radius:8px;margin-bottom:24px;font-size:0.9rem;
+}
+
+.cmd-card{display:flex;flex-direction:column;gap:10px;}
+.cmd-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+code.tag{
+  background:rgba(0,0,0,0.4);color:var(--v3);padding:6px 12px;border-radius:6px;
+  font-family:Consolas,monospace;font-size:0.95rem;border:1px solid var(--v2);
+}
+button.copy{
+  background:linear-gradient(90deg,var(--v2),var(--r2));color:#fff;border:none;
+  padding:7px 14px;border-radius:8px;cursor:pointer;font-size:0.8rem;
+  transition:filter 0.15s;
+}
+button.copy:hover{filter:brightness(1.2);}
+button.copy.done{background:linear-gradient(90deg,#3ddc97,#2bb673);}
+
+.steps{list-style:none;counter-reset:step;}
+.steps li{
+  counter-increment:step;position:relative;padding:16px 16px 16px 56px;
+  background:var(--glass);border-radius:12px;margin-bottom:12px;backdrop-filter:blur(12px);
+  border:1px solid rgba(157,78,221,0.25);
+}
+.steps li::before{
+  content:counter(step);position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--v2),var(--r2));
+  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.85rem;
+}
+.steps li strong{color:var(--white);display:block;margin-bottom:4px;}
+
+.rule-card{border-color:transparent;}
+.rule-card .sanction{
+  display:inline-block;margin-top:8px;padding:5px 12px;border-radius:20px;
+  background:rgba(217,4,41,0.15);color:var(--r3);font-size:0.82rem;border:1px solid var(--r2);
+}
+
+.rec-card h3{color:var(--v3);}
+.rec-card code{background:rgba(0,0,0,0.4);padding:2px 8px;border-radius:5px;color:var(--white);font-size:0.85rem;}
+
+.check-list{list-style:none;}
+.check-list li{
+  display:flex;align-items:center;gap:12px;background:var(--glass);border-radius:10px;
+  padding:14px 16px;margin-bottom:10px;backdrop-filter:blur(12px);cursor:pointer;
+  border:1px solid rgba(157,78,221,0.2);transition:border-color 0.15s;
+}
+.check-list li:hover{border-color:var(--v2);}
+.check-list input{width:20px;height:20px;accent-color:var(--v2);cursor:pointer;flex-shrink:0;}
+.check-list li.checked span{color:var(--gray);text-decoration:line-through;opacity:0.6;}
+.check-list li span{color:var(--white);font-size:0.95rem;}
+
+nav#sidenav{
+  position:fixed;top:50%;right:18px;transform:translateY(-50%);z-index:5;
+  display:flex;flex-direction:column;gap:10px;
+}
+nav#sidenav a{
+  color:var(--gray);text-decoration:none;font-size:0.78rem;padding:6px 10px;
+  border-left:2px solid rgba(157,78,221,0.3);transition:all .15s;white-space:nowrap;
+}
+nav#sidenav a:hover,nav#sidenav a.active{color:var(--v3);border-left-color:var(--v3);}
+#nav-toggle{display:none;}
+
+#top-btn{
+  position:fixed;bottom:24px;right:24px;z-index:6;width:48px;height:48px;border-radius:50%;
+  background:linear-gradient(135deg,var(--v2),var(--r2));color:#fff;border:none;font-size:1.2rem;
+  cursor:pointer;opacity:0;pointer-events:none;transition:opacity .2s,box-shadow .2s;
+  box-shadow:0 0 12px rgba(157,78,221,0.4);
+}
+#top-btn.show{opacity:1;pointer-events:auto;}
+#top-btn:hover{box-shadow:0 0 22px rgba(157,78,221,0.7);}
+
+#export-btn,#search-btn{
+  position:fixed;bottom:24px;z-index:6;width:48px;height:48px;border-radius:50%;
+  background:linear-gradient(135deg,var(--v2),var(--r2));color:#fff;border:none;font-size:1.1rem;
+  cursor:pointer;transition:box-shadow .2s;box-shadow:0 0 12px rgba(157,78,221,0.4);
+}
+#export-btn:hover,#search-btn:hover{box-shadow:0 0 22px rgba(157,78,221,0.7);}
+#export-btn{left:24px;}
+#search-btn{left:82px;}
+
+#search-panel{
+  position:fixed;bottom:82px;left:24px;z-index:6;display:none;
+  background:var(--glass);backdrop-filter:blur(12px);border:1px solid var(--v2);
+  border-radius:10px;padding:8px;box-shadow:0 0 20px rgba(157,78,221,0.2);
+}
+#search-panel.show{display:block;}
+#search-input{
+  background:rgba(0,0,0,0.4);border:1px solid var(--v2);border-radius:6px;color:var(--white);
+  padding:8px 12px;font-size:0.85rem;width:240px;
+}
+#search-input:focus{outline:none;border-color:var(--v3);}
+
+.search-hit{
+  animation:hitFlash 1.8s ease;
+}
+@keyframes hitFlash{
+  0%{box-shadow:0 0 0 3px var(--v3);}
+  100%{box-shadow:0 0 20px rgba(157,78,221,0.08);}
+}
+
+tr.today-row td{color:var(--white);}
+tr.today-row{background:rgba(157,78,221,0.14);}
+tr.today-row .day-cell::after{content:" (Hoy)";color:var(--v3);}
+
+@media print{
+  #bg-canvas,nav#sidenav,#top-btn,#export-btn,#search-btn,#search-panel,button.copy{display:none!important;}
+  body{background:#fff;color:#111;}
+  .card,.table-wrap,.banner,.steps li,.check-list li{
+    background:#f5f5f7!important;color:#111!important;border-color:#ccc!important;box-shadow:none!important;
+  }
+  section{page-break-inside:avoid;}
+  header.hero h1{-webkit-text-fill-color:#111;background:none;color:#111;}
+}
+
+@media(max-width:900px){
+  #export-btn{left:16px;bottom:16px;}
+  #search-btn{left:74px;bottom:16px;}
+  #search-panel{left:16px;bottom:72px;}
+  #search-input{width:70vw;}
+}
+
+@media(max-width:480px){
+  header.hero{padding:70px 16px 40px;}
+  .load-bar{width:170px;}
+  .grid{grid-template-columns:1fr;}
+  .steps li{padding:14px 14px 14px 50px;}
+}
+
+#loading-screen{
+  position:fixed;inset:0;z-index:9999;
+  background:radial-gradient(circle at 50% 40%,#150b28,var(--bg1) 70%);
+  display:flex;align-items:center;justify-content:center;
+  transition:opacity .6s ease,visibility .6s ease;
+}
+#loading-screen.hide{opacity:0;visibility:hidden;pointer-events:none;}
+.load-inner{text-align:center;}
+.load-ring{
+  width:88px;height:88px;margin:0 auto 26px;border-radius:50%;
+  border:3px solid rgba(255,255,255,0.08);
+  border-top-color:var(--v3);border-right-color:var(--r3);
+  animation:ringSpin 0.9s linear infinite;
+  box-shadow:0 0 24px rgba(157,78,221,0.25);
+}
+@keyframes ringSpin{to{transform:rotate(360deg);}}
+.load-title{
+  font-size:1.25rem;letter-spacing:3px;color:#fff;margin-bottom:22px;
+  animation:titlePulse 1.6s ease-in-out infinite;
+}
+.load-title span{
+  background:linear-gradient(90deg,var(--v3),var(--r3));
+  -webkit-background-clip:text;background-clip:text;color:transparent;margin:0 8px;
+}
+@keyframes titlePulse{
+  0%,100%{opacity:.75;text-shadow:0 0 8px rgba(157,78,221,.25);}
+  50%{opacity:1;text-shadow:0 0 20px rgba(157,78,221,.7),0 0 20px rgba(239,35,60,.5);}
+}
+.load-bar{width:220px;height:6px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;margin:0 auto;}
+.load-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--v2),var(--r2));border-radius:4px;transition:width .2s ease;}
+.load-pct{margin-top:10px;font-size:0.78rem;color:var(--gray);letter-spacing:1px;}
+
+@media(prefers-reduced-motion:reduce){
+  .load-ring{animation:none;border-top-color:var(--v3);}
+  .load-title{animation:none;}
+}
+
+@media(max-width:900px){
+  nav#sidenav{
+    top:auto;bottom:0;right:0;left:0;transform:none;flex-direction:row;
+    background:var(--glass);backdrop-filter:blur(12px);padding:10px;justify-content:center;
+    flex-wrap:wrap;border-top:1px solid rgba(157,78,221,0.3);
+  }
+  nav#sidenav a{border-left:none;border-bottom:2px solid transparent;font-size:0.7rem;}
+  nav#sidenav a.active,nav#sidenav a:hover{border-bottom-color:var(--v3);}
+  body{padding-bottom:70px;}
+}
+</style>
+</head>
+<body>
+<div id="loading-screen">
+  <div class="load-inner">
+    <div class="load-ring"></div>
+    <h2 class="load-title">ISLAND <span>VS</span> MEGA</h2>
+    <div class="load-bar"><div class="load-bar-fill" id="load-fill"></div></div>
+    <p class="load-pct" id="load-pct">0%</p>
+  </div>
+</div>
+<canvas id="bg-canvas"></canvas>
+
+<nav id="sidenav">
+  <a href="#s1">Info</a>
+  <a href="#s2">Comandos</a>
+  <a href="#s3">Procedimiento</a>
+  <a href="#s4">Sanciones</a>
+  <a href="#s5">Grabación</a>
+  <a href="#s6">Reportes</a>
+  <a href="#s7">Checklist</a>
+</nav>
+
+<header class="hero">
+  <h1>GUIA ADMIN - EVENTO ISLAND VS MEGA</h1>
+  <p>Protocolo Oficial de Procedimiento, Comandos y Reglamento de Arbitraje</p>
+  <div class="badges">
+    <span class="badge">EDICIÓN ESPECIAL INTER-SERVIDORES</span>
+    <span class="badge red">BOLSA DE PREMIO: 6,000 ROBUX</span>
+  </div>
+</header>
+
+<section id="s1"><div class="wrap">
+  <h2>Información General y Cronograma</h2>
+  <div class="grid">
+    <div class="card"><h3>Formato</h3><p>4 Caseríos de Puerto Rico Island VS. 4 Caseríos de Mega Regreso RP (Mega Update).</p></div>
+    <div class="card"><h3>Modalidad</h3><p>Enfrentamientos 5 vs 5 (5 jugadores por caserío).</p></div>
+    <div class="card"><h3>Sistema de Puntos</h3><p>Cada caserío ganador suma +1 punto a su servidor. Mayor puntuación acumulada al cierre = campeón.</p></div>
+    <div class="card"><h3>Premio Total</h3><p class="big">6,000 Robux</p><p>para el bando ganador.</p></div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th>Día</th><th>Sede</th><th>Canal de Voz</th></tr>
+      <tr data-day="5"><td class="day-cell">Viernes</td><td>Mapa de Puerto Rico Island</td><td>Discord de Puerto Rico Island</td></tr>
+      <tr data-day="6"><td class="day-cell">Sábado</td><td>Mapa de Mega Regreso RP</td><td>Discord de Mega Regreso RP</td></tr>
+      <tr data-day="0"><td class="day-cell">Domingo (Gran Final)</td><td>Juego y Discord del servidor líder</td><td>—</td></tr>
+    </table>
+  </div>
+
+  <div class="grid" style="margin-top:24px;">
+    <div class="card"><h3>7:00 PM</h3><p>Convocatoria obligatoria, pase de lista y verificación técnica de caseríos.</p></div>
+    <div class="card"><h3>7:30 PM</h3><p>Inicio oficial de las rondas de combate.</p></div>
+  </div>
+  <div class="banner">Puntualidad estricta: solo se aplaza ante causas de fuerza mayor demostrables que afecten a múltiples equipos; retrasos individuales no justificados pierden el punto.</div>
+</div></section>
+
+<section id="s2"><div class="wrap">
+  <h2>Comandos de Administrador</h2>
+  <div class="banner">Para ejecutar un comando sobre varios jugadores simultáneamente, escribe los nombres separados por comas sin espacios: nombre,nombre,nombre</div>
+  <div id="cmd-list"></div>
+</div></section>
+
+<section id="s3"><div class="wrap">
+  <h2>Procedimiento Oficial de Guerra</h2>
+  <ol class="steps">
+    <li><strong>Elección de Guerra y Pareja</strong>Formar dupla de exactamente dos administradores (co-admins) por cada enfrentamiento: uno debe ser de Puerto Rico Island y el otro de Mega Regreso RP.</li>
+    <li><strong>División de Roles</strong>Asignar qué caserío gestiona cada admin, seleccionar el servidor privado correspondiente y abrir canal de voz de staff compartido.</li>
+    <li><strong>Reunión de Facciones</strong>Entrar a la llamada de voz del caserío asignado, recopilar los nombres de usuario de los 5 titulares y sumarlos al servidor.</li>
+    <li><strong>Secuencia Técnica Obligatoria</strong>Aplicar en orden estricto: ;tp, luego ;char y finalmente ;ref. Confirmar que todos lleven el atuendo correcto.</li>
+    <li><strong>Entrega de Armamento</strong>Entregar el arma oficial reglamentaria (Vector) mediante el panel administrativo.</li>
+    <li><strong>Verificación de Disparo</strong>Confirmar que ningún jugador sufra bugs de animación o recarga y que todos puedan disparar correctamente.</li>
+    <li><strong>Reagrupación de Staff</strong>Retornar a la llamada de voz compartida con el co-administrador para coordinar el inicio.</li>
+    <li><strong>Lanzamiento Oficial</strong>Emitir el conteo formal en el chat con el formato exacto: "Conteo Caserio1 VS Caserio2".</li>
+  </ol>
+
+  <div class="card rule-card" style="margin-top:24px;">
+    <h3>Sustituciones y Desconexiones</h3>
+    <p>No se permiten sustituciones de jugadores bajo ninguna circunstancia; cada caserío debe jugar con sus 5 titulares confirmados.</p>
+    <p style="margin-top:8px;">Si un jugador se desconecta de forma no intencional y no ha muerto en la ronda, la ronda se detiene y se reinicia por completo.</p>
+  </div>
+</div></section>
+
+<section id="s4"><div class="wrap">
+  <h2>Reglas de Combate y Sanciones</h2>
+  <div class="card rule-card"><h3>Uso de Hacks / Scripts / Macha External</h3><p>Cero tolerancia a ejecutores, scripts externos o programas ajenos como Macha External.</p><span class="sanction">Descalificación total del caserío · punto al rival</span></div>
+  <div class="card rule-card"><h3>Bugear Pared (Wall Glitch)</h3><p>Prohibido disparar, traspasar o aprovechar errores de colisión en paredes o estructuras.</p><span class="sanction">Pérdida automática de la ronda</span></div>
+  <div class="card rule-card"><h3>Bugear Mira (Crosshair Glitch)</h3><p>Prohibido forzar miras invisibles, bugs de cámara o miras alteradas.</p><span class="sanction">Pérdida automática de la ronda</span></div>
+  <div class="card rule-card"><h3>Abuso de Bugs Generales</h3><p>Prohibido aprovecharse de cualquier falla o exploit del juego.</p><span class="sanction">Pérdida automática de la ronda</span></div>
+</div></section>
+
+<section id="s5"><div class="wrap">
+  <h2>Normativa de Grabación y Clips</h2>
+  <div class="banner">Prohibido el uso de Medal para grabar o clipear partidas, debido a problemas demostrados de cortes, desincronización y caídas de rendimiento.</div>
+  <div class="grid">
+    <div class="card rec-card"><h3>PC · NVIDIA</h3><p>ShadowPlay / GeForce Experience</p><p><code>Alt+Z</code> menú · <code>Alt+F10</code> guardar</p></div>
+    <div class="card rec-card"><h3>PC · AMD</h3><p>Radeon ReLive vía software Adrenalin.</p></div>
+    <div class="card rec-card"><h3>PC · Windows</h3><p>Xbox Game Bar <code>Win+Alt+G</code> u OBS Studio con Replay Buffer.</p></div>
+    <div class="card rec-card"><h3>Móviles (iOS/Android)</h3><p>Grabador de pantalla integrado de fábrica.</p></div>
+  </div>
+</div></section>
+
+<section id="s6"><div class="wrap">
+  <h2>Protocolo de Reportes y Reclamos</h2>
+  <div class="grid">
+    <div class="card"><h3>Regla de 1 Bichote</h3><p>Solo se admite 1 único representante por caserío en la sala de reportes.</p></div>
+    <div class="card"><h3>Momento Exclusivo</h3><p>Reportes y revisión de clips se atienden al terminar la guerra completa, nunca entre rondas.</p></div>
+    <div class="card"><h3>Reclamos Cerrados</h3><p>Toda denuncia se presenta al ingresar a la sala; no se admiten quejas sobre la marcha salvo por análisis de un clip.</p></div>
+    <div class="card"><h3>Rondas Repetidas</h3><p>Si una ronda fue reiniciada, cualquier reclamo anterior sobre esa ronda queda sin validez.</p></div>
+  </div>
+</div></section>
+
+<section id="s7"><div class="wrap">
+  <h2>Checklist de Capitanes y Staff</h2>
+  <ul class="check-list" id="checklist">
+    <li><input type="checkbox"><span>Confirmar alineación de 5 jugadores titulares por caserío.</span></li>
+    <li><input type="checkbox"><span>Verificar presencia de ambos equipos en llamada de voz a las 7:00 PM.</span></li>
+    <li><input type="checkbox"><span>Validar que los jugadores tengan activos grabadores permitidos (sin Medal).</span></li>
+    <li><input type="checkbox"><span>Ejecutar la secuencia técnica (;tp ➔ ;char ➔ ;ref) y entrega de Vector.</span></li>
+    <li><input type="checkbox"><span>Confirmar resultado final con el co-admin y publicarlo en el canal de resultados.</span></li>
+  </ul>
+</div></section>
+
+<button id="top-btn" title="Volver arriba">↑</button>
+<button id="export-btn" title="Exportar a PDF">⭳</button>
+<button id="search-btn" title="Buscar">🔍</button>
+<div id="search-panel">
+  <input type="text" id="search-input" placeholder="Buscar comando, regla, paso...">
+</div>
+
+<script>
+// loading screen
+(function(){
+  const screen=document.getElementById('loading-screen');
+  const fill=document.getElementById('load-fill');
+  const pct=document.getElementById('load-pct');
+  const start=Date.now();
+  const MIN_MS=1300;
+  let progress=0;
+  const timer=setInterval(()=>{
+    progress+=Math.random()*16;
+    if(progress>92)progress=92;
+    fill.style.width=progress+'%';
+    pct.textContent=Math.floor(progress)+'%';
+  },160);
+  function finish(){
+    clearInterval(timer);
+    fill.style.width='100%';
+    pct.textContent='100%';
+    const wait=Math.max(0,MIN_MS-(Date.now()-start));
+    setTimeout(()=>screen.classList.add('hide'),wait+250);
+  }
+  if(document.readyState==='complete') finish();
+  else window.addEventListener('load',finish);
+  setTimeout(finish,4000); // seguro por si algo tarda
+})();
+
+// Command data
+const cmds=[
+ {tag:";tp [user]",desc:"Teletransporta al jugador o grupo de jugadores seleccionados a tu posición actual en el mapa."},
+ {tag:";char [UserReceptor] [UserModelo]",desc:"Clona el atuendo, skin o vestimenta del usuario modelo y se lo aplica al jugador receptor para garantizar uniformidad."},
+ {tag:";ref [user]",desc:"Restaura la vida, estamina, herramientas y estado general del jugador a sus valores iniciales."},
+ {tag:";track all true",desc:"Activa el rastreo y marcadores de posición en tiempo real de todos los jugadores presentes en el servidor."},
+ {tag:";cmdbox",desc:"Abre la consola rápida de comandos de administrador en la interfaz de pantalla."},
+ {tag:";n [mensaje]",desc:"Envía una notificación/advertencia formal en pantalla a un usuario o equipo en caso de faltas de conducta."}
+];
+const list=document.getElementById('cmd-list');
+cmds.forEach((c,i)=>{
+  const div=document.createElement('div');
+  div.className='card cmd-card';
+  div.innerHTML=`<div class="cmd-top"><code class="tag">${c.tag}</code><button class="copy" data-i="${i}">Copiar</button></div><p>${c.desc}</p>`;
+  list.appendChild(div);
+});
+list.addEventListener('click',e=>{
+  if(e.target.classList.contains('copy')){
+    const i=e.target.dataset.i;
+    navigator.clipboard.writeText(cmds[i].tag).catch(()=>{});
+    const btn=e.target;
+    const old=btn.textContent;
+    btn.textContent='¡Copiado!';btn.classList.add('done');
+    setTimeout(()=>{btn.textContent=old;btn.classList.remove('done');},1400);
+  }
+});
+
+// checklist con almacenamiento local
+const CHECK_KEY='admin-guide-checklist-v1';
+const checklistItems=document.querySelectorAll('#checklist li');
+function loadChecklist(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(CHECK_KEY)||'[]');
+    checklistItems.forEach((li,i)=>{
+      const cb=li.querySelector('input');
+      cb.checked=!!saved[i];
+      li.classList.toggle('checked',cb.checked);
+    });
+  }catch(e){}
+}
+function saveChecklist(){
+  try{
+    const state=Array.from(checklistItems).map(li=>li.querySelector('input').checked);
+    localStorage.setItem(CHECK_KEY,JSON.stringify(state));
+  }catch(e){}
+}
+checklistItems.forEach(li=>{
+  li.addEventListener('click',e=>{
+    if(e.target.tagName!=='INPUT'){
+      const cb=li.querySelector('input');cb.checked=!cb.checked;
+    }
+    li.classList.toggle('checked',li.querySelector('input').checked);
+    saveChecklist();
+  });
+});
+loadChecklist();
+
+// marcar el día de hoy en el cronograma
+(function(){
+  const todayNum=new Date().getDay(); // 0=domingo,5=viernes,6=sábado
+  const row=document.querySelector(`tr[data-day="${todayNum}"]`);
+  if(row) row.classList.add('today-row');
+})();
+
+// exportar a PDF (usa el diálogo de impresión del navegador)
+document.getElementById('export-btn').addEventListener('click',()=>window.print());
+
+// buscador rápido
+const searchBtn=document.getElementById('search-btn');
+const searchPanel=document.getElementById('search-panel');
+const searchInput=document.getElementById('search-input');
+searchBtn.addEventListener('click',()=>{
+  searchPanel.classList.toggle('show');
+  if(searchPanel.classList.contains('show')) searchInput.focus();
+});
+searchInput.addEventListener('keydown',e=>{
+  if(e.key!=='Enter') return;
+  const q=searchInput.value.trim().toLowerCase();
+  if(!q) return;
+  const targets=document.querySelectorAll('.card, .steps li, .check-list li, td, th');
+  let hit=null;
+  for(const el of targets){
+    if(el.textContent.toLowerCase().includes(q)){hit=el;break;}
+  }
+  if(hit){
+    hit.scrollIntoView({behavior:'smooth',block:'center'});
+    hit.classList.remove('search-hit');
+    void hit.offsetWidth;
+    hit.classList.add('search-hit');
+  }
+});
+
+// back to top
+const topBtn=document.getElementById('top-btn');
+window.addEventListener('scroll',()=>{
+  topBtn.classList.toggle('show',window.scrollY>400);
+  let cur='';
+  document.querySelectorAll('section[id]').forEach(s=>{
+    if(window.scrollY>=s.offsetTop-150) cur=s.id;
+  });
+  document.querySelectorAll('#sidenav a').forEach(a=>{
+    a.classList.toggle('active',a.getAttribute('href')==='#'+cur);
+  });
+});
+topBtn.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+
+// particle background
+(function(){
+  const canvas=document.getElementById('bg-canvas');
+  const ctx=canvas.getContext('2d');
+  let w,h,particles=[];
+  const mouse={x:null,y:null};
+  function resize(){w=canvas.width=innerWidth;h=canvas.height=innerHeight;}
+  resize();window.addEventListener('resize',resize);
+  window.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;});
+  const N=Math.min(70,Math.floor(w*h/18000));
+  for(let i=0;i<N;i++){
+    particles.push({x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-.5)*0.3,vy:(Math.random()-.5)*0.3,r:Math.random()*1.8+0.6,c:Math.random()>0.5?'157,78,221':'217,4,41'});
+  }
+  function tick(){
+    ctx.clearRect(0,0,w,h);
+    particles.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;
+      if(mouse.x){const dx=mouse.x-p.x,dy=mouse.y-p.y,d=Math.hypot(dx,dy);
+        if(d<120){p.x-=dx*0.003;p.y-=dy*0.003;}}
+      if(p.x<0)p.x=w;if(p.x>w)p.x=0;if(p.y<0)p.y=h;if(p.y>h)p.y=0;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(${p.c},0.6)`;ctx.fill();
+    });
+    for(let i=0;i<particles.length;i++){
+      for(let j=i+1;j<particles.length;j++){
+        const a=particles[i],b=particles[j];
+        const d=Math.hypot(a.x-b.x,a.y-b.y);
+        if(d<110){
+          ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
+          ctx.strokeStyle=`rgba(157,78,221,${0.12*(1-d/110)})`;ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+</script>
+</body>
+</html>
